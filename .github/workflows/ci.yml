@@ -16,12 +16,20 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: rustfmt
         run: cargo fmt --all -- --check
+      # pm-cuda's dev-dependencies pull in pm-candle with the `cuda` feature,
+      # which makes cudarc's build.rs require `nvcc`. GitHub-hosted runners
+      # have no CUDA toolkit, so pm-cuda is excluded from the --all-targets
+      # runs below and checked separately as a lib-only (no dev-deps) target.
       - name: clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets --exclude pm-cuda -- -D warnings
+      - name: clippy (pm-cuda, lib only)
+        run: cargo clippy -p pm-cuda --lib -- -D warnings
       - name: build
-        run: cargo build --workspace --all-targets
+        run: cargo build --workspace --all-targets --exclude pm-cuda
+      - name: build (pm-cuda, lib only)
+        run: cargo build -p pm-cuda --lib
       - name: test
-        run: cargo test --workspace
+        run: cargo test --workspace --exclude pm-cuda
 
   pm-core-no-backend-deps:
     runs-on: ubuntu-latest
