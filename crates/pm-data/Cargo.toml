@@ -1,0 +1,13 @@
+[package]
+name = "pm-data"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Streaming + packing data pipeline for Photon × Mamba2."
+
+[dependencies]
+thiserror.workspace = true
+pm-tokenizer = { path = "../pm-tokenizer" }
+
+[lints]
+workspace = true

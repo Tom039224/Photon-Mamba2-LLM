@@ -1,0 +1,62 @@
+[package]
+name = "pm-cuda"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "CUDA backend (cudarc + nvptx64 PTX kernels) for pm-core::Ops (Phase 2)."
+build = "build.rs"
+
+[dependencies]
+pm-core = { path = "../pm-core" }
+pm-backend = { path = "../pm-backend" }
+thiserror.workspace = true
+
+[dependencies.cudarc]
+version = "0.19.8"
+default-features = false
+features = [
+    "std",
+    "driver",
+    "nvrtc",
+    "cublas",
+    "cuda-version-from-build-system",
+    "dynamic-linking",
+]
+optional = true
+
+[dev-dependencies]
+anyhow.workspace = true
+pm-candle = { path = "../pm-candle", features = ["cuda"] }
+# Test-only: reuse `cross_entropy_loss` as the reference in the fused
+# cross-entropy parity test instead of re-deriving it in test code.
+# `pm-train` depends only on `pm-core` (no backend crates, no cycle).
+pm-train = { path = "../pm-train" }
+npyz = "0.9"
+
+[features]
+default = []
+# Enables the cudarc-based host runtime and triggers PTX kernel
+# compilation in build.rs. Without this feature pm-cuda is a stub —
+# this keeps CPU-only builds of the workspace working and matches the
+# `cuda` feature gating used by pm-candle.
+cuda = ["dep:cudarc"]
+
+[[example]]
+name = "smoke"
+path = "examples/smoke.rs"
+required-features = ["cuda"]
+
+[[example]]
+name = "bench_ssd"
+path = "examples/bench_ssd.rs"
+required-features = ["cuda"]
+
+# Phase B'.3 wave-2 diagnostic (docs/perf-log.md) — occupancy calculator
+# for ssd_scan_chunked_p1, driver-API only (no ncu/nsight-compute).
+[[example]]
+name = "diag_occupancy"
+path = "examples/diag_occupancy.rs"
+required-features = ["cuda"]
+
+[lints]
+workspace = true

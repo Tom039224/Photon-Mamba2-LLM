@@ -1,0 +1,67 @@
+# 14-hour overnight stress + sanity run for the 102.7 M PhotonMamba on
+# RTX 5070.
+#
+# Goals:
+# 1. Verify the training pipeline survives a multi-hour run without
+#    NaN / OOM / leak / crash.
+# 2. Produce a baseline loss curve we can compare against once F.6
+#    (activation checkpointing) lands and we can scale to seq_len=2048.
+# 3. Land periodic safetensors checkpoints so a Ctrl+C — or a
+#    runaway divergence — doesn't waste the whole run.
+#
+# Why these knobs:
+# - `n_steps = 100_000` with `max_wall_time_seconds = 50_400` (14 h):
+#   whichever bound fires first wins. At the ~1.0 s/step measured in
+#   the F.9 smoke we'd hit the wall-time cap around step 50 k; the
+#   100 k ceiling is just a safety net.
+# - `fresh_batch_per_step = true`: with random data each step, the
+#   training is a pipeline stress test, not a meaningful overfit. If
+#   you want real text instead, set `text_data` + `tokenizer` below
+#   and clear `fresh_batch_per_step`.
+# - `save_every = 1000`: ~17 min between saves at 1 s/step. Atomic
+#   rename keeps the file consistent even if the process is killed
+#   mid-write.
+# - `seq_len = 512`, `batch_size = 1`: the same envelope as the F.9
+#   smoke, which is what currently fits in 12 GB without activation
+#   checkpointing.
+
+[model]
+vocab_size = 50257
+d_model = 768
+d_state = 128
+d_head = 64
+n_heads = 12
+n_groups = 1
+d_conv = 4
+block_len = 64
+rmsnorm_eps = 1e-5
+n_layers_per_level = 10
+n_levels = 2
+chunk_size = 4
+init_scale = 0.02
+
+[train]
+seq_len = 512
+batch_size = 1
+n_steps = 100000
+max_wall_time_seconds = 50400  # = 14 * 3600
+lr = 6e-4
+beta1 = 0.9
+beta2 = 0.95
+eps = 1e-8
+weight_decay = 0.1
+max_grad_norm = 1.0
+seed = 42
+init_perturb_seed = 12345
+save_path = "checkpoints/overnight_14h.safetensors"
+save_every = 1000
+log_every = 100
+fresh_batch_per_step = true
+# Real-text path: uncomment and point at a tokenised corpus.
+# text_data = "data/fineweb_edu_sample.txt"
+# tokenizer = "tokenizer/gpt2.json"
+# doc_sep_id = 50256  # GPT-2 EOS
+# fresh_batch_per_step = false  # ignored when text_data is set
+
+[runtime]
+device = "cuda"

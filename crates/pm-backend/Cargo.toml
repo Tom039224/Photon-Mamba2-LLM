@@ -1,0 +1,13 @@
+[package]
+name = "pm-backend"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Backend trait and device abstractions for Photon x Mamba2 LLM."
+
+[dependencies]
+pm-core = { path = "../pm-core" }
+thiserror.workspace = true
+
+[lints]
+workspace = true

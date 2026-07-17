@@ -1,0 +1,35 @@
+# 30-step preflight to confirm tokenizer + text source + real-data
+# loss path before the 2h run.
+
+[model]
+vocab_size = 50257
+d_model = 768
+d_state = 128
+d_head = 64
+n_heads = 12
+n_groups = 1
+d_conv = 4
+block_len = 64
+rmsnorm_eps = 1e-5
+n_layers_per_level = 10
+n_levels = 2
+chunk_size = 4
+init_scale = 0.02
+
+[train]
+seq_len = 512
+batch_size = 1
+n_steps = 30
+lr = 3e-4
+weight_decay = 0.1
+max_grad_norm = 1.0
+seed = 42
+init_perturb_seed = 12345
+save_path = ""
+log_every = 5
+text_data = "data/tinystories_valid.txt"
+tokenizer = "tokenizer/gpt2.json"
+doc_sep_id = 50256
+
+[runtime]
+device = "cuda"

@@ -1,0 +1,58 @@
+# Flat Mamba2 LM — 100M-parameter Phase D.2a comparison baseline.
+#
+# Non-hierarchical counterpart of photon_mamba_100m.toml: the same
+# embedding table, same Mamba2 block hyper-parameters, same approximate
+# parameter count — but without PHOTON's chunker / converter / decoder.
+# Used to isolate the contribution of PHOTON's hierarchical structure
+# in the D.2b ablation ("same params, flat vs. hierarchical").
+#
+# Parameter count (N = 32 flat Mamba2 blocks):
+#   TokenEmbedding (tied): 50_257 * 768 ≈ 38.60M
+#   32 × Mamba2Block      ≈ 32 × 1.981M ≈ 63.40M
+#   -------------------------------------------------------
+#   total                                ≈ 102.00M  (< 2 % of PHOTON 102.76M)
+#
+# For per-block param count breakdown see pm-candle/tests/flat_mamba.rs
+# `block_params()` helper and the `param_parity_100m` test. PLAN.md D.2a.
+
+[model]
+model_type = "flat"
+flat_n_layers = 32
+vocab_size = 50257       # GPT-2 BPE — same as photon_mamba_100m
+d_model = 768
+d_state = 128
+d_head = 64
+n_heads = 12             # n_heads * d_head = d_model
+n_groups = 1             # shared B/C across heads
+d_conv = 4
+block_len = 64
+rmsnorm_eps = 1e-5
+init_scale = 0.02
+# The three fields below are required by the ModelConfig schema but are
+# silently ignored when model_type = "flat" (build_flat_mamba never reads
+# them). They are kept for schema compatibility so one TOML diff against
+# photon_mamba_100m.toml clearly shows what changed.
+n_layers_per_level = 10
+n_levels = 2
+chunk_size = 4
+
+[train]
+seq_len = 512
+batch_size = 1
+n_steps = 100
+lr = 6e-4
+beta1 = 0.9
+beta2 = 0.95
+eps = 1e-8
+weight_decay = 0.1
+max_grad_norm = 1.0
+seed = 42
+init_perturb_seed = 12345
+save_path = ""
+log_every = 5
+# consistency_alpha must be 0 for flat (no hierarchy to penalise).
+# Default is already 0; listed explicitly for clarity.
+consistency_alpha = 0.0
+
+[runtime]
+device = "cuda"

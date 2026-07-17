@@ -1,0 +1,36 @@
+# Sanity check that the overnight pipeline (periodic save + fresh
+# batches + GPU) works. 30 steps only, ~30 seconds.
+
+[model]
+vocab_size = 50257
+d_model = 768
+d_state = 128
+d_head = 64
+n_heads = 12
+n_groups = 1
+d_conv = 4
+block_len = 64
+rmsnorm_eps = 1e-5
+n_layers_per_level = 10
+n_levels = 2
+chunk_size = 4
+init_scale = 0.02
+
+[train]
+seq_len = 512
+batch_size = 1
+n_steps = 30
+lr = 6e-4
+beta1 = 0.9
+beta2 = 0.95
+weight_decay = 0.1
+max_grad_norm = 1.0
+seed = 42
+init_perturb_seed = 12345
+save_path = "checkpoints/smoke_overnight.safetensors"
+save_every = 10
+log_every = 5
+fresh_batch_per_step = true
+
+[runtime]
+device = "cuda"

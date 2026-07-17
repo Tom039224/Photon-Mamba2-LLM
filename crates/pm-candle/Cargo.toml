@@ -1,0 +1,34 @@
+[package]
+name = "pm-candle"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Candle backend implementation of pm-core::Ops (Phase 1)."
+
+[dependencies]
+pm-core = { path = "../pm-core" }
+pm-backend = { path = "../pm-backend" }
+pm-cuda = { path = "../pm-cuda", optional = true }
+candle-core = "0.11"
+candle-nn = "0.11"
+thiserror.workspace = true
+
+[dev-dependencies]
+anyhow.workspace = true
+# Test-only: bf16_mixed_precision.rs exercises `cross_entropy_loss` end
+# to end. `pm-train` already carries a symmetric dev-dependency on
+# `pm-candle` (for its own tests) — dev-dependencies are never built
+# transitively, so this does not create a real dependency cycle.
+pm-train = { path = "../pm-train" }
+
+[features]
+default = []
+cuda = ["candle-core/cuda", "candle-nn/cuda", "dep:pm-cuda", "pm-cuda/cuda"]
+cudnn = ["cuda", "candle-core/cudnn"]
+
+[[example]]
+name = "smoke"
+path = "examples/smoke.rs"
+
+[lints]
+workspace = true

@@ -1,0 +1,53 @@
+# 13-hour Candle overnight run at lr=1e-4 (2026-06-30).
+#
+# Hypothesis test: the loss plateau at ~7.0 from the 14 h
+# `realtext_overnight_14h.toml` run (lr=3e-4) was LR-induced. The
+# lr_sweep diagnostic (logs/lr_sweep_1e-4.log) showed lr=1e-4 had
+# step-500 loss 9.1 (slower descent in absolute terms, but cleaner
+# trajectory and lower grad-noise). This run extends that to ~50 k
+# steps to see whether the slower lr breaks below the 7.0 plateau.
+#
+# Envelope is identical to realtext_overnight_14h.toml EXCEPT:
+#   - lr           : 3e-4 → 1e-4
+#   - max_wall     : 50 400 s (14 h) → 46 800 s (13 h)
+#   - save_path    : new filename so we don't clobber the 14h ckpt
+#   - n_steps cap  : 100 000 (unchanged, just a safety net)
+
+[model]
+vocab_size = 50257
+d_model = 768
+d_state = 128
+d_head = 64
+n_heads = 12
+n_groups = 1
+d_conv = 4
+block_len = 64
+rmsnorm_eps = 1e-5
+n_layers_per_level = 10
+n_levels = 2
+chunk_size = 4
+init_scale = 0.02
+
+[train]
+seq_len = 512
+batch_size = 1
+n_steps = 100000
+max_wall_time_seconds = 46800  # 13 h
+lr = 1e-4
+beta1 = 0.9
+beta2 = 0.95
+eps = 1e-8
+weight_decay = 0.1
+max_grad_norm = 1.0
+seed = 42
+init_perturb_seed = 12345
+save_path = "checkpoints/realtext_overnight_lr1e-4.safetensors"
+save_every = 1000
+log_every = 100
+text_data = "data/tinystories_valid.txt"
+tokenizer = "tokenizer/gpt2.json"
+doc_sep_id = 50256
+fresh_batch_per_step = false
+
+[runtime]
+device = "cuda"

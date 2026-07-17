@@ -1,0 +1,9 @@
+# Default build settings for the Photon x Mamba2 LLM workspace.
+#
+# CUDA_COMPUTE_CAP=120 is required so candle-kernels and cudarc compile
+# PTX for Blackwell (RTX 5070, sm_120). Without it the CUDA build either
+# fails or falls back to an older arch and skips Blackwell-specific paths.
+# See docs/blackwell-notes.md.
+
+[env]
+CUDA_COMPUTE_CAP = "120"

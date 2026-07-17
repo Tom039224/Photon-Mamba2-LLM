@@ -1,0 +1,64 @@
+# Phase D.4 comparison run: flat Mamba2 102M baseline (model_type = "flat").
+#
+# 60.0M GPT-2 tokens of FineWeb-Edu (HuggingFaceFW/fineweb-edu,
+# sample-10BT), streamed live from HuggingFace via a FIFO — the corpus is
+# never persisted to disk (see scripts/stream_fineweb.py and
+# scripts/d4_chain.sh). n_steps = 29300 at B=4, T=512:
+#   29300 * 4 * 512 = 60,006,400 tokens ≈ 60.0M.
+#
+# Counterpart: configs/d4_photon_a0.toml — identical in every field except
+# the [model] section (model_type/flat_n_layers) and save_path.
+#
+# Token-matched with D.2b (docs/photon-value.md) but ~10.8x the token
+# count (5.53M -> 60.0M) and general-domain data instead of TinyStories,
+# to check whether PHOTON's loss advantage over flat Mamba2 (proven at
+# 5.5M tokens, D.2b, 2026-07-05) holds at scale. Throughput/VRAM numbers
+# land in docs/phase-mem-report.md. NOTE: unlike PHOTON, flat's VRAM
+# footprint at B=4/no-ckpt had not been measured before D.4 smoke-testing
+# (docs/perf-log.md's B=4 numbers are all PHOTON) — see the D.4 smoke
+# test entry for the measured result.
+#
+# IMPORTANT (fingerprint pitfall, docs/perf-log.md 2026-07-04): always
+# pass `--backend cuda` explicitly — omitting it silently runs the Candle
+# backend instead.
+
+[model]
+model_type = "flat"
+flat_n_layers = 32
+vocab_size = 50257
+d_model = 768
+d_state = 128
+d_head = 64
+n_heads = 12
+n_groups = 1
+d_conv = 4
+block_len = 64
+rmsnorm_eps = 1e-5
+n_layers_per_level = 10   # schema-required, ignored for flat
+n_levels = 2
+chunk_size = 4
+init_scale = 0.02
+
+[train]
+seq_len = 512
+batch_size = 4
+n_steps = 29300
+lr = 6e-4
+beta1 = 0.9
+beta2 = 0.95
+eps = 1e-8
+weight_decay = 0.1
+max_grad_norm = 1.0
+seed = 42
+init_perturb_seed = 12345
+text_data = "runtime/d4_corpus.fifo"
+tokenizer = "tokenizer/gpt2.json"
+doc_sep_id = 50256
+log_every = 100
+save_path = "checkpoints/d4_flat.safetensors"
+save_every = 2000
+max_wall_time_seconds = 216000   # 60h in-trainer safety cap (expected actual ~37h); n_steps is the real authority. A wall-cap stop is treated as INCOMPLETE by scripts/d4_chain.sh.
+consistency_alpha = 0.0
+
+[runtime]
+device = "cuda"

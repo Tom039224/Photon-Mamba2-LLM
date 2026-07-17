@@ -1,0 +1,17 @@
+[build]
+target = "nvptx64-nvidia-cuda"
+
+[target.nvptx64-nvidia-cuda]
+# RTX 5070 (Blackwell, sm_120).  Without an explicit -C target-cpu the
+# nvptx backend defaults to sm_70 (Volta, 2017) — confirmed by
+# `.target sm_70, debug` in the emitted PTX and a 231x slowdown vs the
+# pure-Ops chunked scan.  sm_120 lets LLVM use newer instructions
+# (cp.async, improved scheduling) and the CUDA driver-JIT path on
+# Blackwell matches the hardware exactly.
+rustflags = ["-C", "target-cpu=sm_120"]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+panic = "abort"
+debug = false

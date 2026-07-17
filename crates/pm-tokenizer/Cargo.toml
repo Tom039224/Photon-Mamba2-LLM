@@ -1,0 +1,13 @@
+[package]
+name = "pm-tokenizer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Tokenizer wrapper for Photon × Mamba2 (HuggingFace tokenizers)."
+
+[dependencies]
+thiserror.workspace = true
+tokenizers = { version = "0.20", default-features = false, features = ["onig"] }
+
+[lints]
+workspace = true

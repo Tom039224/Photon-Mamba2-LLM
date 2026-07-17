@@ -1,0 +1,23 @@
+[package]
+name = "pm-train"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Backend-agnostic training loop, optimisers, and losses for Photon × Mamba2."
+
+# IMPORTANT: pm-train is generic over `O: Ops`; it must not depend on any
+# concrete backend crate (candle-*, cudarc, tt-*). Backend-specific crates
+# come in only at the binary layer (pm-cli) or via dev-dependencies in tests.
+[dependencies]
+pm-core = { path = "../pm-core" }
+thiserror.workspace = true
+safetensors = "0.4"
+bytemuck = "1"
+
+[dev-dependencies]
+pm-candle = { path = "../pm-candle" }
+candle-core = "0.11"
+anyhow.workspace = true
+
+[lints]
+workspace = true

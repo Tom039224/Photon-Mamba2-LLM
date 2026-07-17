@@ -1,0 +1,21 @@
+[package]
+name = "pm-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Backend-agnostic core abstractions for Photon x Mamba2 LLM."
+
+# IMPORTANT: pm-core must not depend on any concrete backend crate
+# (candle-*, cudarc, tt-metal, etc.). This is enforced by
+# `scripts/check_pm_core_deps.sh` and CI.
+[dependencies]
+thiserror.workspace = true
+
+[dev-dependencies]
+# Used only by integration tests to load numpy fixtures produced by
+# reference/gen_fixtures.py. Test-only — does not appear in
+# `cargo tree -p pm-core --edges normal`.
+npyz = "0.9"
+
+[lints]
+workspace = true

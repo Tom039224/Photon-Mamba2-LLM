@@ -1,0 +1,33 @@
+[package]
+name = "pm-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Command-line interface for Photon x Mamba2 LLM."
+
+[[bin]]
+name = "pm"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+anyhow.workspace = true
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+pm-core = { path = "../pm-core" }
+pm-candle = { path = "../pm-candle" }
+pm-train = { path = "../pm-train" }
+pm-infer = { path = "../pm-infer" }
+pm-tokenizer = { path = "../pm-tokenizer" }
+pm-data = { path = "../pm-data" }
+pm-backend = { path = "../pm-backend" }
+pm-cuda = { path = "../pm-cuda", optional = true }
+serde_json = "1"
+ctrlc = "3"
+
+[features]
+default = []
+cuda = ["pm-candle/cuda", "dep:pm-cuda", "pm-cuda/cuda"]
+
+[lints]
+workspace = true

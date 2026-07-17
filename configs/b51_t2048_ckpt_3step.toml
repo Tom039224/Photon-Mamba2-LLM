@@ -1,0 +1,45 @@
+# Phase B'.1 speed-profile probe — T=2048, ckpt ON, 3 steps (2026-07-04).
+# The T=2048 DoD envelope (fits at 8696 MiB, perf-log 2026-07-03). Only
+# 3 steps because per-step wall is large at this length; step 0 is warmup,
+# steps 1-2 give the steady-state figure. Doubles as the memory-regression
+# check for Phase B' (peak must stay ≤ 12 GB).
+
+[model]
+vocab_size = 50257
+d_model = 768
+d_state = 128
+d_head = 64
+n_heads = 12
+n_groups = 1
+d_conv = 4
+block_len = 64
+rmsnorm_eps = 1e-5
+n_layers_per_level = 10
+n_levels = 2
+chunk_size = 4
+init_scale = 0.02
+
+[train]
+seq_len = 2048
+batch_size = 1
+n_steps = 3
+max_wall_time_seconds = 1800
+lr = 1e-4
+beta1 = 0.9
+beta2 = 0.95
+eps = 1e-8
+weight_decay = 0.1
+max_grad_norm = 1.0
+seed = 42
+init_perturb_seed = 12345
+save_path = ""
+save_every = 0
+log_every = 1
+text_data = "data/tinystories_valid.txt"
+tokenizer = "tokenizer/gpt2.json"
+doc_sep_id = 50256
+fresh_batch_per_step = false
+activation_checkpointing = true
+
+[runtime]
+device = "cuda"

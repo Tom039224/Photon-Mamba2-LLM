@@ -1,0 +1,40 @@
+# D.2a flat-baseline smoke config — tiny model, 5 steps, CPU-runnable.
+#
+# Purpose: CI / quick correctness check for the flat training path
+# introduced in Phase D.2a. Verifies that:
+#   - model_type = "flat" is parsed and dispatched correctly
+#   - flat_n_layers is respected
+#   - consistency_alpha = 0 is enforced
+#   - the training loop runs 5 steps without error
+#
+# Not a benchmark config. For the full comparison run see flat_mamba_100m.toml.
+# PLAN.md Phase D.2a.
+
+[model]
+model_type = "flat"
+flat_n_layers = 4
+vocab_size = 256
+d_model = 64
+d_state = 16
+d_head = 32
+n_heads = 2              # n_heads * d_head = d_model
+n_groups = 1
+d_conv = 4
+block_len = 8
+rmsnorm_eps = 1e-5
+init_scale = 0.02
+# Schema-required but ignored for flat models.
+n_layers_per_level = 2
+n_levels = 2
+chunk_size = 4
+
+[train]
+seq_len = 32
+batch_size = 1
+n_steps = 5
+lr = 1e-3
+seed = 7
+consistency_alpha = 0.0
+
+[runtime]
+device = "cpu"

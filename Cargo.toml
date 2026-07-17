@@ -1,0 +1,32 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/pm-core",
+    "crates/pm-backend",
+    "crates/pm-candle",
+    "crates/pm-cli",
+    "crates/pm-cuda",
+    "crates/pm-data",
+    "crates/pm-infer",
+    "crates/pm-tokenizer",
+    "crates/pm-train",
+]
+exclude = ["crates/pm-cuda/kernel"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/Tom039224/Photon_Mamba2-LLM"
+authors = ["Tom039224"]
+
+[workspace.dependencies]
+thiserror = "1"
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "warn"
+
+[workspace.lints.clippy]
+pedantic = { level = "allow", priority = -1 }

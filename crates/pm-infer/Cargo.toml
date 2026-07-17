@@ -1,0 +1,20 @@
+[package]
+name = "pm-infer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Inference (generation + evaluation) for Photon × Mamba2."
+
+# IMPORTANT: pm-infer is generic over `O: Ops`; it must not depend on any
+# concrete backend crate. Backend selection happens at the binary layer.
+[dependencies]
+pm-core = { path = "../pm-core" }
+thiserror.workspace = true
+
+[dev-dependencies]
+pm-candle = { path = "../pm-candle" }
+pm-train = { path = "../pm-train" }
+anyhow.workspace = true
+
+[lints]
+workspace = true

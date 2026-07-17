@@ -1,0 +1,49 @@
+Papers/
+
+# Rust
+/target
+**/target/
+**/target-nvptx/
+**/*.rs.bk
+Cargo.lock.bak
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Python reference
+reference/__pycache__/
+reference/*.pyc
+reference/.venv/
+
+# Training artifacts
+checkpoints/
+runs/
+*.safetensors
+
+# Data
+tests/data/
+data/
+tokenizer/
+logs/
+
+# Phase D.4: Python venv for the FineWeb-Edu streaming producer, and the
+# runtime FIFO directory (never a persisted corpus — see
+# scripts/stream_fineweb.py).
+.venv-d4/
+runtime/
+
+# Internal working docs — not published. The public-facing writeup is
+# consolidated into SUMMARY.md / README.md / README_JA.md.
+docs/
+PLAN.md
+HANDOFF.md
+CLAUDE.md
+SUMMARY.md
+
+# Dev environment / AI coding tooling
+.claude/
+
+# nvptx test
+nvptx_example/

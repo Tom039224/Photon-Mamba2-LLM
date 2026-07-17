@@ -1,0 +1,20 @@
+[package]
+name = "pm-cuda-kernel"
+version = "0.1.0"
+edition = "2024"
+
+# Detached from the parent workspace: this crate is built only by
+# pm-cuda/build.rs against the nvptx64-nvidia-cuda target with a
+# nightly toolchain. Cargo would otherwise try to apply the parent's
+# stable rust-toolchain.toml and host build target to it.
+[workspace]
+
+[lib]
+name = "pm_cuda_kernel"
+crate-type = ["cdylib"]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+panic = "abort"
+debug = false

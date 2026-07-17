@@ -1,0 +1,37 @@
+# Phase D.1 smoke config — recursive consistency loss wired end-to-end
+# (`consistency_alpha = 0.3`, PHOTON §2.3 Eq. (9)/(11)). Tiny/CPU so it
+# runs in seconds; verifies `pm train` doesn't panic/OOM/NaN with
+# α > 0 and that the (CE + α·L_rec) loss decreases over a handful of
+# steps. Not a scale/perf benchmark — see `configs/photon_mamba_100m.toml`
+# and the `b51_*`/`lr_sweep_*` configs for those.
+
+[model]
+vocab_size = 256
+d_model = 64
+d_state = 16
+d_head = 16
+n_heads = 4
+n_groups = 1
+d_conv = 4
+block_len = 16
+rmsnorm_eps = 1e-5
+n_layers_per_level = 1
+n_levels = 2
+chunk_size = 4
+init_scale = 0.05
+
+[train]
+seq_len = 128
+batch_size = 2
+n_steps = 5
+lr = 5e-3
+weight_decay = 0.0
+max_grad_norm = 1.0
+seed = 42
+init_perturb_seed = 0xDEADBEEF
+log_every = 1
+save_path = ""
+consistency_alpha = 0.3
+
+[runtime]
+device = "cpu"
