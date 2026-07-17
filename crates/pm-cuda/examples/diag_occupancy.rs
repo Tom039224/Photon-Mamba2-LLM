@@ -43,10 +43,12 @@ fn main() -> anyhow::Result<()> {
         ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK)?;
     let smem_per_block_optin =
         ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK_OPTIN)?;
-    let smem_per_sm = ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_MULTIPROCESSOR)?;
+    let smem_per_sm =
+        ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_MULTIPROCESSOR)?;
     let regs_per_block_max = ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_BLOCK)?;
     let regs_per_sm = ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR)?;
-    let max_blocks_per_sm_hw = ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_MAX_BLOCKS_PER_MULTIPROCESSOR)?;
+    let max_blocks_per_sm_hw =
+        ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_MAX_BLOCKS_PER_MULTIPROCESSOR)?;
     let warp_size = ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_WARP_SIZE)?;
     let cc_major = ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR)?;
     let cc_minor = ctx.attribute(DAttr::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR)?;
@@ -75,7 +77,10 @@ fn main() -> anyhow::Result<()> {
         mem_clock_khz as f64 / 1e6
     );
     println!("memory bus width                     : {bus_width_bits} bits");
-    println!("L2 cache                             : {} KB", l2_bytes / 1024);
+    println!(
+        "L2 cache                             : {} KB",
+        l2_bytes / 1024
+    );
 
     // Sanity-check bandwidth estimate: driver reports the raw pin clock;
     // GDDR6/7 transfer 2 bits/pin/Hz (DDR), so peak = 2 * clock * (bus/8).
@@ -132,10 +137,15 @@ fn main() -> anyhow::Result<()> {
     };
     let blocks_by_threads = i64::from(max_threads_per_sm) / i64::from(BLOCK_SIZE);
     let blocks_by_hw_cap = i64::from(max_blocks_per_sm_hw);
-    let hand_blocks_per_sm = [blocks_by_smem, blocks_by_regs, blocks_by_threads, blocks_by_hw_cap]
-        .into_iter()
-        .min()
-        .unwrap_or(0);
+    let hand_blocks_per_sm = [
+        blocks_by_smem,
+        blocks_by_regs,
+        blocks_by_threads,
+        blocks_by_hw_cap,
+    ]
+    .into_iter()
+    .min()
+    .unwrap_or(0);
 
     println!();
     println!("--- Hand-computed occupancy bounds (before driver granularity rules) ---");
@@ -175,7 +185,8 @@ fn main() -> anyhow::Result<()> {
         let sms_touched = n_blocks.min(sm_count as usize);
         let avg_blocks_per_sm =
             (n_blocks as f64 / sm_count as f64).min(driver_blocks_per_sm as f64);
-        let occ_at_b = 100.0 * (avg_blocks_per_sm * warps_per_block as f64) / max_warps_per_sm as f64;
+        let occ_at_b =
+            100.0 * (avg_blocks_per_sm * warps_per_block as f64) / max_warps_per_sm as f64;
         println!(
             "B={b:<2} -> grid={n_blocks:<3} blocks | SMs touched={sms_touched:>2}/{sm_count} | avg blocks/SM={avg_blocks_per_sm:.2} (cap {driver_blocks_per_sm}) | occupancy~={occ_at_b:.1}%"
         );

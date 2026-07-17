@@ -3068,10 +3068,9 @@ fn ssd_scan_backward_vjp(
     // tape's generation between here and there (`SubTapeGuard` only
     // truncates `entries`, it never calls `Tape::clear`).
     let (n_sub_entries, sub_generation) = {
-        let t = bk
-            .tape
-            .lock()
-            .map_err(|_| CudaError::Internal("tape lock poisoned (ssd_scan_backward walk)".into()))?;
+        let t = bk.tape.lock().map_err(|_| {
+            CudaError::Internal("tape lock poisoned (ssd_scan_backward walk)".into())
+        })?;
         (t.entries.len(), t.generation)
     };
 
