@@ -32,10 +32,18 @@ pub trait Ops {
 
     /// Build a tensor from an `f32` host slice. Used by tests and reference
     /// loaders. Production paths load weights via `safetensors` instead.
+    ///
+    /// Takes `&self` by design (needs the backend's device/context) — not
+    /// the `wrong_self_convention` constructor case.
+    #[allow(clippy::wrong_self_convention)]
     fn from_slice_f32(&self, data: &[f32], shape: &[usize]) -> Result<Self::Tensor, Self::Error>;
 
     /// Build an integer tensor from an `i64` host slice. Used by tokenisers
     /// and tests that need to drive `embedding` lookups.
+    ///
+    /// Takes `&self` by design (needs the backend's device/context) — not
+    /// the `wrong_self_convention` constructor case.
+    #[allow(clippy::wrong_self_convention)]
     fn from_slice_i64(&self, data: &[i64], shape: &[usize]) -> Result<Self::Tensor, Self::Error>;
 
     /// Copy a tensor's data back to host as `f32`. For tests / debugging.

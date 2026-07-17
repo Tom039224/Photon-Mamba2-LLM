@@ -128,7 +128,7 @@ fn mamba2_block_backward_reaches_all_params() {
 
 /// Correctness (not just presence): central-difference FD grad-check on
 /// `in_proj_weight`, which was frozen before the fix. Lenient tolerance
-/// + zero-threshold (fp32 FD on a compound SSD forward loses digits to
+/// and zero-threshold (fp32 FD on a compound SSD forward loses digits to
 /// cancellation — see B4.4f T5 / commit `b5895c8`); we only assert on
 /// elements whose analytical grad is well above the FD noise floor.
 #[test]

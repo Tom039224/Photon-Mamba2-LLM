@@ -49,6 +49,7 @@ impl PackedBatcher {
     /// tokens from the source.
     ///
     /// Returns `Ok(None)` once the source is fully drained.
+    #[allow(clippy::type_complexity)]
     pub fn next_batch(
         &self,
         source: &mut TextFileSource,

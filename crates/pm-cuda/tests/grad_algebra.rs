@@ -347,7 +347,7 @@ fn embedding_grad() {
     // Expected: rows 0 and 2 get gradient 1.0 per element; rows 1, 3 get 0.
     let mut expected = vec![0.0f32; vocab * emb_dim];
     for d in 0..emb_dim {
-        expected[0 * emb_dim + d] += 1.0;
+        expected[d] += 1.0;
         expected[2 * emb_dim + d] += 1.0;
     }
     assert!(
@@ -1221,7 +1221,7 @@ fn matmul_grad_4d_broadcast_batch() {
     let n = 6usize;
 
     // Small deterministic values to reduce FD noise.
-    let a_data: Vec<f32> = (0..2 * 1 * m * k).map(|i| (i + 1) as f32 * 0.1).collect();
+    let a_data: Vec<f32> = (0..2 * m * k).map(|i| (i + 1) as f32 * 0.1).collect();
     let b_data: Vec<f32> = (0..2 * 5 * k * n).map(|i| (i + 1) as f32 * 0.05).collect();
 
     // ---- grad_A ----------------------------------------------------------------
@@ -1247,7 +1247,7 @@ fn matmul_grad_4d_broadcast_batch() {
         // Analytical: loss = sum_{all} (A @ B).
         // grad_A[bi, 0, i, j] = sum_{bj=0..5} sum_{n=0..6} g[bi, bj, i, n] * B[bi, bj, j, n]
         // Since g = ones, grad_A[bi, 0, i, j] = sum_{bj} sum_n B[bi, bj, j, n].
-        let mut expected_ga = vec![0.0f32; 2 * 1 * m * k];
+        let mut expected_ga = vec![0.0f32; 2 * m * k];
         for bi in 0..2usize {
             for i in 0..m {
                 for j in 0..k {
@@ -1258,7 +1258,7 @@ fn matmul_grad_4d_broadcast_batch() {
                             acc += b_data[b_idx];
                         }
                     }
-                    expected_ga[bi * 1 * m * k + 0 * m * k + i * k + j] = acc;
+                    expected_ga[bi * m * k + i * k + j] = acc;
                 }
             }
         }

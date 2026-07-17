@@ -490,11 +490,17 @@ where
         }
 
         // 3. Build level_inputs (same as PhotonMamba::forward).
+        debug_assert!(
+            chunked.len() >= n_enc - 1,
+            "chunked.len() ({}) must be >= n_enc - 1 ({})",
+            chunked.len(),
+            n_enc - 1
+        );
         let mut level_inputs: Vec<O::Tensor> = Vec::with_capacity(n_enc);
         level_inputs.push(x0);
-        for l in 0..n_enc - 1 {
-            let shape = chunked[l].shape().to_vec();
-            level_inputs.push(ops.reshape(&chunked[l], &shape)?);
+        for chunk in chunked.iter().take(n_enc - 1) {
+            let shape = chunk.shape().to_vec();
+            level_inputs.push(ops.reshape(chunk, &shape)?);
         }
 
         // 4. Decoder, checkpointed per Mamba2Block. Iterate top-down to

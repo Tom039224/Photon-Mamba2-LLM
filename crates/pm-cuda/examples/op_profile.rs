@@ -16,10 +16,7 @@
 
 use std::time::Instant;
 
-use pm_core::{
-    mamba2::{Mamba2Block, Mamba2Config},
-    Module, Ops, Param,
-};
+use pm_core::{Ops, Param};
 use pm_cuda::CudaBackend;
 
 // ---- Production shapes -------------------------------------------------------
@@ -133,7 +130,7 @@ fn main() -> anyhow::Result<()> {
     // ---- 3. conv1d depthwise: [1,XBC_DIM,T] groups=XBC_DIM K=4 -------------
     {
         let x_data = lcg_vec(5, B * XBC_DIM * T, 0.1, 0.0);
-        let w_data = lcg_vec(6, XBC_DIM * 1 * D_CONV, 0.02, 0.0);
+        let w_data = lcg_vec(6, XBC_DIM * D_CONV, 0.02, 0.0);
         let b_data = lcg_vec(7, XBC_DIM, 0.01, 0.0);
         let x = bk.from_slice_f32(&x_data, &[B, XBC_DIM, T])?;
         let w = bk.from_slice_f32(&w_data, &[XBC_DIM, 1, D_CONV])?;
@@ -156,7 +153,7 @@ fn main() -> anyhow::Result<()> {
     // ---- 4. broadcast mul: [1,T,N_HEADS,D_HEAD] × [1,T,N_HEADS,1] ----------
     {
         let a_data = lcg_vec(8, B * T * N_HEADS * D_HEAD, 0.1, 0.0);
-        let b_data = lcg_vec(9, B * T * N_HEADS * 1, 0.1, 0.5);
+        let b_data = lcg_vec(9, B * T * N_HEADS, 0.1, 0.5);
         let a = bk.from_slice_f32(&a_data, &[B, T, N_HEADS, D_HEAD])?;
         let b = bk.from_slice_f32(&b_data, &[B, T, N_HEADS, 1])?;
         let ms = bench(
@@ -168,7 +165,7 @@ fn main() -> anyhow::Result<()> {
             N_ITERS,
         )?;
         rows.push((
-            format!("broadcast mul [1,512,12,64]×[1,512,12,1]"),
+            "broadcast mul [1,512,12,64]×[1,512,12,1]".to_string(),
             ms,
             "broadcast_binary_op: D2H+CPU+H2D; numel=393K".to_string(),
         ));
@@ -176,7 +173,7 @@ fn main() -> anyhow::Result<()> {
 
     // ---- 5. broadcast mul: [1,1,N_HEADS,1] × [1,T,N_HEADS,D_HEAD] ----------
     {
-        let a_data = lcg_vec(10, 1 * 1 * N_HEADS * 1, -0.5, -0.1);
+        let a_data = lcg_vec(10, N_HEADS, -0.5, -0.1);
         let b_data = lcg_vec(11, B * T * N_HEADS * D_HEAD, 0.1, 0.0);
         let a = bk.from_slice_f32(&a_data, &[1, 1, N_HEADS, 1])?;
         let b = bk.from_slice_f32(&b_data, &[B, T, N_HEADS, D_HEAD])?;
@@ -198,7 +195,7 @@ fn main() -> anyhow::Result<()> {
     // ---- 6. broadcast add: [1,T,N_HEADS] + [1,1,N_HEADS] -------------------
     {
         let a_data = lcg_vec(12, B * T * N_HEADS, 0.1, 0.0);
-        let b_data = lcg_vec(13, 1 * 1 * N_HEADS, 0.01, 0.0);
+        let b_data = lcg_vec(13, N_HEADS, 0.01, 0.0);
         let a = bk.from_slice_f32(&a_data, &[B, T, N_HEADS])?;
         let b = bk.from_slice_f32(&b_data, &[1, 1, N_HEADS])?;
         let ms = bench(
@@ -285,7 +282,7 @@ fn main() -> anyhow::Result<()> {
     {
         let logits = lcg_vec(20, B * T * VOCAB, 0.1, 0.0);
         let idx_raw: Vec<i64> = (0..B * T).map(|i| (i % VOCAB) as i64).collect();
-        let idx_shape_data: Vec<i64> = idx_raw.iter().map(|&v| v).collect();
+        let idx_shape_data: Vec<i64> = idx_raw.to_vec();
         let x = bk.from_slice_f32(&logits, &[B * T, VOCAB])?;
         let idx = bk.from_slice_i64(&idx_shape_data, &[B * T, 1])?;
         let ms = bench(
@@ -499,7 +496,7 @@ fn main() -> anyhow::Result<()> {
     println!("## conv1d backward only (T=512)");
     {
         let x_data = lcg_vec(5, B * XBC_DIM * T, 0.1, 0.0);
-        let w_data = lcg_vec(6, XBC_DIM * 1 * D_CONV, 0.02, 0.0);
+        let w_data = lcg_vec(6, XBC_DIM * D_CONV, 0.02, 0.0);
         let b_data = lcg_vec(7, XBC_DIM, 0.01, 0.0);
         let xp = bk.param_from_slice_f32(&x_data, &[B, XBC_DIM, T])?;
         let wp = bk.param_from_slice_f32(&w_data, &[XBC_DIM, 1, D_CONV])?;

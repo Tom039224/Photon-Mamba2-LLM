@@ -279,7 +279,7 @@ fn matmul_split_probe() {
         // ~1.2 GB... grown below to ~5 GB
         let n_e = sizes[i % sizes.len()];
         let buf = stream.alloc_zeros::<f32>(n_e).expect("churn alloc");
-        if i % 3 == 0 {
+        if i.is_multiple_of(3) {
             drop(buf);
         } else {
             live += n_e;
@@ -291,7 +291,7 @@ fn matmul_split_probe() {
     let mut j = 0usize;
     hold.retain(|_| {
         j += 1;
-        j % 4 != 0
+        !j.is_multiple_of(4)
     });
     while live < 5_000_000_000 / 4 {
         let n_e = sizes[i % sizes.len()];

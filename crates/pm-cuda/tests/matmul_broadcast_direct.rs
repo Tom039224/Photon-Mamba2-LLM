@@ -52,7 +52,7 @@ fn direct_broadcast_b1_forward() {
     let bk = CudaBackend::new(0).expect("CUDA init");
 
     let a_data = lcg(4 * 3 * 6, 11);
-    let b_data = lcg(1 * 6 * 5, 17);
+    let b_data = lcg(6 * 5, 17);
 
     // Candle CPU reference.
     let a_ref = cpu.from_slice_f32(&a_data, &[4, 3, 6]).unwrap();
@@ -80,7 +80,7 @@ fn direct_broadcast_a1_forward() {
     let cpu = CandleBackend::new_cpu();
     let bk = CudaBackend::new(0).expect("CUDA init");
 
-    let a_data = lcg(1 * 3 * 6, 31);
+    let a_data = lcg(3 * 6, 31);
     let b_data = lcg(4 * 6 * 5, 37);
 
     let a_ref = cpu.from_slice_f32(&a_data, &[1, 3, 6]).unwrap();
@@ -119,7 +119,7 @@ fn direct_broadcast_b1_grad_a() {
     let bk = CudaBackend::new(0).expect("CUDA init");
 
     let a_data = lcg(4 * 3 * 6, 51);
-    let b_data = lcg(1 * 6 * 5, 57);
+    let b_data = lcg(6 * 5, 57);
 
     let pa = bk
         .param_from_slice_f32(&a_data, &[4, 3, 6])
@@ -157,7 +157,7 @@ fn direct_broadcast_b1_grad_b() {
     let bk = CudaBackend::new(0).expect("CUDA init");
 
     let a_data = lcg(4 * 3 * 6, 61);
-    let b_data = lcg(1 * 6 * 5, 67);
+    let b_data = lcg(6 * 5, 67);
 
     let a_t = Ops::from_slice_f32(&bk, &a_data, &[4, 3, 6]).expect("a");
     let pb = bk
@@ -176,7 +176,7 @@ fn direct_broadcast_b1_grad_b() {
     let got = Ops::to_vec_f32(&bk, &gb).expect("to_vec");
 
     // Σ_{batch=0..4, i=0..3} A[batch,i,k] for each (k,n).
-    let mut expected = vec![0.0f32; 1 * 6 * 5];
+    let mut expected = vec![0.0f32; 6 * 5];
     for batch in 0..4usize {
         for i in 0..3usize {
             for k in 0..6usize {
@@ -208,7 +208,7 @@ fn direct_broadcast_b1_grad_b() {
 fn direct_broadcast_a1_grad_b() {
     let bk = CudaBackend::new(0).expect("CUDA init");
 
-    let a_data = lcg(1 * 3 * 6, 71);
+    let a_data = lcg(3 * 6, 71);
     let b_data = lcg(4 * 6 * 5, 77);
 
     let a_t = Ops::from_slice_f32(&bk, &a_data, &[1, 3, 6]).expect("a");
@@ -251,7 +251,7 @@ fn direct_broadcast_a1_grad_b() {
 fn direct_broadcast_a1_grad_a() {
     let bk = CudaBackend::new(0).expect("CUDA init");
 
-    let a_data = lcg(1 * 3 * 6, 81);
+    let a_data = lcg(3 * 6, 81);
     let b_data = lcg(4 * 6 * 5, 87);
 
     let pa = bk
@@ -271,7 +271,7 @@ fn direct_broadcast_a1_grad_a() {
     let got = Ops::to_vec_f32(&bk, &ga).expect("to_vec");
 
     // Σ_{batch=0..4, n=0..5} B[batch,k,n] for each (i,k).
-    let mut expected = vec![0.0f32; 1 * 3 * 6];
+    let mut expected = vec![0.0f32; 3 * 6];
     for i in 0..3usize {
         for k in 0..6usize {
             let mut acc = 0.0f32;

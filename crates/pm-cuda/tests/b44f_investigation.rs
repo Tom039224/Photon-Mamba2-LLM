@@ -61,6 +61,7 @@ fn l2_norm(v: &[f32]) -> f32 {
 // Run one ssd_scan + backward and return (grad_x, grad_a, grad_b, grad_c).
 // `use_ptx = true`  → CudaBackend::ssd_scan (PTX forward + ops_default backward via VJP).
 // `use_ptx = false` → ssd_scan_ops_default (ops_default forward AND backward).
+#[allow(clippy::too_many_arguments)]
 fn run_backward(
     bk: &CudaBackend,
     x_data: &[f32],
@@ -350,6 +351,7 @@ fn make_test_block(
 /// `(loss_plus − loss_minus) / (2·eps)`.
 ///
 /// The param is restored to its original data before returning.
+#[allow(clippy::too_many_arguments)]
 fn fd_scalar(
     bk: &CudaBackend,
     block: &Mamba2Block<CudaBackend>,
@@ -426,7 +428,7 @@ fn b44f_t4_fd_grad_check_mamba2block() {
     let block = make_test_block(&bk, &cfg, 500).expect("make_test_block");
 
     // Input: [B=1, T=4, D=8], small random values in (−0.25, 0.25).
-    let x_data = lcg_vec(9901, 1 * 4 * 8, 0.5, -0.25);
+    let x_data = lcg_vec(9901, 4 * 8, 0.5, -0.25);
     let x = bk.from_slice_f32(&x_data, &[1, 4, 8]).expect("x tensor");
 
     // ── Phase 1: analytical backward ────────────────────────────────────────

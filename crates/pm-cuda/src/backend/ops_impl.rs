@@ -1850,7 +1850,7 @@ impl Ops for CudaBackend {
             let mut perm: Vec<usize> = (0..rank).collect();
             perm.swap(dim, last_dim);
 
-            for dst_flat in 0..n_idx {
+            for (dst_flat, slot) in idx_t_host.iter_mut().enumerate() {
                 // Decode dst multi-index using dst_strides_idx.
                 let mut remaining = dst_flat;
                 let mut src_flat = 0usize;
@@ -1860,7 +1860,7 @@ impl Ops for CudaBackend {
                     // dst axis d comes from src axis perm[d].
                     src_flat += coord * src_strides_idx[perm[d]];
                 }
-                idx_t_host[dst_flat] = idx_host[src_flat];
+                *slot = idx_host[src_flat];
             }
 
             let idx_t_dev = self.stream.clone_htod(&idx_t_host)?;
@@ -2940,6 +2940,29 @@ impl CudaBackend {
 
 // ---- B4.3c: SsdScan VJP via pure-Ops recompute ----------------------------
 
+// B4.4d — RAII guard for sub-tape cleanup. Placed here so it is local to
+// the SsdScan VJP section of this file.
+
+/// Truncates the shared autograd tape back to `start_len` on drop.
+///
+/// Installed at the top of `ssd_scan_backward_vjp` so that any error
+/// path through `apply_vjp` also truncates, preventing GPU tensor leaks
+/// from sub-tape entries into the parent graph.
+struct SubTapeGuard<'a> {
+    tape: &'a std::sync::Mutex<super::tape::Tape>,
+    start_len: usize,
+}
+
+impl<'a> Drop for SubTapeGuard<'a> {
+    fn drop(&mut self) {
+        if let Ok(mut t) = self.tape.lock() {
+            t.entries.truncate(self.start_len);
+        }
+        // If the lock is poisoned the process is already going down;
+        // truncation is best-effort.
+    }
+}
+
 /// VJP for a single `SsdScan` forward op.
 ///
 /// This function is called from the main backward loop when a `SsdScan`
@@ -2964,31 +2987,7 @@ impl CudaBackend {
 /// `grad_out` must NOT push tape entries when used in step 4 (it is a
 /// gradient value, not a forward tensor). We detach it by stripping its
 /// `NodeId` before passing it to `mul`.
-
-// B4.4d — RAII guard for sub-tape cleanup. Placed here (between the
-// doc-comment block above and the function below) so it is local to
-// the SsdScan VJP section of this file.
-
-/// Truncates the shared autograd tape back to `start_len` on drop.
-///
-/// Installed at the top of `ssd_scan_backward_vjp` so that any error
-/// path through `apply_vjp` also truncates, preventing GPU tensor leaks
-/// from sub-tape entries into the parent graph.
-struct SubTapeGuard<'a> {
-    tape: &'a std::sync::Mutex<super::tape::Tape>,
-    start_len: usize,
-}
-
-impl<'a> Drop for SubTapeGuard<'a> {
-    fn drop(&mut self) {
-        if let Ok(mut t) = self.tape.lock() {
-            t.entries.truncate(self.start_len);
-        }
-        // If the lock is poisoned the process is already going down;
-        // truncation is best-effort.
-    }
-}
-
+#[allow(clippy::too_many_arguments)]
 fn ssd_scan_backward_vjp(
     bk: &CudaBackend,
     parent_grads: &mut HashMap<NodeId, CudaTensor>,
@@ -3784,7 +3783,7 @@ fn apply_vjp(
                         }
                         let mut perm: Vec<usize> = (0..rank).collect();
                         perm.swap(dim, last_dim);
-                        for dst_flat in 0..n_idx {
+                        for (dst_flat, slot) in idx_t_host.iter_mut().enumerate() {
                             let mut remaining = dst_flat;
                             let mut src_flat = 0usize;
                             for d in 0..rank {
@@ -3792,7 +3791,7 @@ fn apply_vjp(
                                 remaining %= dst_s[d];
                                 src_flat += coord * src_s[perm[d]];
                             }
-                            idx_t_host[dst_flat] = idx_host[src_flat];
+                            *slot = idx_host[src_flat];
                         }
                         let idx_t_dev = bk.stream.clone_htod(&idx_t_host)?;
                         let idx_t =

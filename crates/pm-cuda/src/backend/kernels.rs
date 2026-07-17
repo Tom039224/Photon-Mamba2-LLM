@@ -379,6 +379,7 @@ pub fn transpose_nd_f32(
 ///
 /// `src_shape` is the full shape of the source tensor.
 /// `axis`, `start`, `len` specify the narrow operation.
+#[allow(clippy::too_many_arguments)]
 pub fn narrow_copy_f32(
     ctx: &Arc<CudaContext>,
     stream: &Arc<CudaStream>,
@@ -428,6 +429,7 @@ pub fn narrow_copy_f32(
 /// `narrow_backward_f32` in `pm-cuda-kernel` for the inverse-of-`narrow`
 /// index mapping. `dst` does not need to be pre-zeroed: every element is
 /// written exactly once (either gathered from `grad_out` or `0.0`).
+#[allow(clippy::too_many_arguments)]
 pub fn narrow_backward_f32(
     ctx: &Arc<CudaContext>,
     stream: &Arc<CudaStream>,
@@ -553,6 +555,7 @@ pub fn broadcast_copy_f32(
 /// broadcast path (B'.3, `docs/perf-log.md`): measured ~1.3 ms/call in
 /// training, with the host-side scalar divmod loop — not the PCIe
 /// transfers — as the dominant cost.
+#[allow(clippy::too_many_arguments)]
 pub fn broadcast_mul_f32(
     ctx: &Arc<CudaContext>,
     stream: &Arc<CudaStream>,
@@ -723,6 +726,7 @@ pub fn log_softmax_lastdim_f32(
 /// `table`: `(V, D)` f32 slice.
 /// `indices`: flat i64 slice of length `indices_len`.
 /// `out`: pre-allocated f32 slice of length `indices_len * embed_dim`.
+#[allow(clippy::too_many_arguments)]
 pub fn embedding_f32(
     ctx: &Arc<CudaContext>,
     stream: &Arc<CudaStream>,
@@ -884,7 +888,7 @@ pub fn conv1d_f32(
             "conv1d_f32: C_in={c_in} != C_in_per_group={c_in_per_group} * groups={groups}"
         )));
     }
-    if c_out % groups != 0 {
+    if !c_out.is_multiple_of(groups) {
         return Err(CudaError::Shape(format!(
             "conv1d_f32: C_out={c_out} must be divisible by groups={groups}"
         )));
@@ -1040,10 +1044,10 @@ pub fn conv1d_f32(
         }
         let bias_host = stream.clone_dtoh(bias_slice)?;
         for b_idx in 0..batch {
-            for co in 0..c_out {
+            for (co, &bias_val) in bias_host.iter().enumerate() {
                 let base = b_idx * c_out * t_out + co * t_out;
                 for t in 0..t_out {
-                    out_host[base + t] += bias_host[co];
+                    out_host[base + t] += bias_val;
                 }
             }
         }

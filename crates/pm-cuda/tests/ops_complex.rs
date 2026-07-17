@@ -147,7 +147,7 @@ fn conv1d_regular_matches_candle() {
     let x_data = lcg_vec(b * c_in * t, 2001);
     let w_data = lcg_vec(c_out * c_in * k, 2002);
     // t_out = (8 + 2*1 - 3) / 1 + 1 = 8
-    let t_out = (t + 2 * 1 - k) / 1 + 1;
+    let t_out = (t + 2 - k) + 1;
 
     // Reference: Candle CPU.
     let cpu = CandleBackend::new_cpu();

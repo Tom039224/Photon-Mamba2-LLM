@@ -49,7 +49,7 @@ fn lcg_vec_i64(seed: u64, n: usize, lo: i64, hi: i64) -> Vec<i64> {
             state = state
                 .wrapping_mul(6_364_136_223_846_793_005)
                 .wrapping_add(1);
-            let r = ((state >> 41) as u64) % ((hi - lo) as u64);
+            let r = (state >> 41) % ((hi - lo) as u64);
             lo + r as i64
         })
         .collect()
@@ -133,7 +133,7 @@ fn h7_broadcast_mul_prod_shape() {
     {
         let (b, t, h, p) = (1usize, 512, 12, 64);
         let a_data = lcg_vec(701, b * t * h * p, 1.0, -0.5);
-        let b_data = lcg_vec(702, b * t * h * 1, 1.0, -0.5);
+        let b_data = lcg_vec(702, b * t * h, 1.0, -0.5);
 
         let a_cuda = cuda_bk
             .from_slice_f32(&a_data, &[b, t, h, p])
@@ -167,7 +167,7 @@ fn h7_broadcast_mul_prod_shape() {
     // Sub-case B: [1,1,12,1] × [1,512,12,64]
     {
         let (b, t, h, p) = (1usize, 512, 12, 64);
-        let a_data = lcg_vec(703, 1 * 1 * h * 1, 1.0, -0.5);
+        let a_data = lcg_vec(703, h, 1.0, -0.5);
         let b_data = lcg_vec(704, b * t * h * p, 1.0, -0.5);
 
         let a_cuda = cuda_bk
@@ -420,7 +420,7 @@ fn h11_conv1d_depthwise_prod_shape() {
     let groups = c;
 
     let x_data = lcg_vec(1101, b * c * t_in, 1.0, -0.5);
-    let w_data = lcg_vec(1102, c * 1 * k, 0.1, -0.05);
+    let w_data = lcg_vec(1102, c * k, 0.1, -0.05);
 
     let x_cuda = cuda_bk
         .from_slice_f32(&x_data, &[b, c, t_in])
@@ -584,7 +584,7 @@ fn h_saved_tensor_probe() {
 
     // Sub-case B: broadcast [1,512,12,1] × [1,512,12,64]
     {
-        let a_data = lcg_vec(2003, b * t * h * 1, 1.0, -0.5);
+        let a_data = lcg_vec(2003, b * t * h, 1.0, -0.5);
         let b_data = lcg_vec(2004, b * t * h * p, 1.0, -0.5);
 
         // CudaBackend backward.

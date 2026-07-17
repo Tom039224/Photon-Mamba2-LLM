@@ -40,6 +40,7 @@ fn broadcast_trace_enabled() -> bool {
 /// Pads the shorter shape with leading 1s, then computes the broadcast
 /// output shape. Returns `(a_padded, b_padded, out_shape)`, all rank-equal
 /// to `out_shape.len()`.
+#[allow(clippy::type_complexity)]
 fn broadcast_out_shape(
     a_shape: &[usize],
     b_shape: &[usize],
@@ -125,6 +126,9 @@ impl CudaBackend {
         Ok(CudaTensor::new(Arc::new(storage), shape.to_vec()))
     }
 
+    // `from_*` naming mirrors `pm_core::Ops::from_slice_f32`, which needs
+    // `&self` to reach the backend's device/context — not a constructor.
+    #[allow(clippy::wrong_self_convention)]
     pub(crate) fn from_slice_f32_inner(
         &self,
         data: &[f32],
@@ -282,7 +286,7 @@ impl CudaBackend {
             out_strides[i] = out_strides[i + 1] * out_shape[i + 1];
         }
 
-        for out_idx in 0..n_out {
+        for (out_idx, slot) in result.iter_mut().enumerate() {
             let mut a_idx = 0usize;
             let mut b_idx = 0usize;
             let mut rem = out_idx;
@@ -292,7 +296,7 @@ impl CudaBackend {
                 a_idx += coord * a_strides[d];
                 b_idx += coord * b_strides[d];
             }
-            result[out_idx] = elem_op(a_host[a_idx], b_host[b_idx]);
+            *slot = elem_op(a_host[a_idx], b_host[b_idx]);
         }
         let compute_elapsed = trace_t0.map(|t| t.elapsed());
 

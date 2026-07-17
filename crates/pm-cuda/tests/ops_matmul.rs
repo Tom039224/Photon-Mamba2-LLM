@@ -127,7 +127,7 @@ fn matmul_batched_broadcast_4d() {
     let bk = CudaBackend::new(0).expect("CUDA init");
 
     // a: (1, 3, 2, 3)
-    let a_data = lcg_vec(1 * 3 * 2 * 3, 200);
+    let a_data = lcg_vec(3 * 2 * 3, 200);
     // b: (4, 3, 3, 5)
     let b_data = lcg_vec(4 * 3 * 3 * 5, 201);
 

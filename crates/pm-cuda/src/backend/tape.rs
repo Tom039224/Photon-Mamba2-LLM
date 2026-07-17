@@ -439,6 +439,11 @@ impl Tape {
         self.entries.len()
     }
 
+    /// Return `true` if no ops have been recorded on the tape.
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+
     /// Clear all recorded ops and start a new generation.
     ///
     /// Called automatically at the end of `backward()`.  Can also be

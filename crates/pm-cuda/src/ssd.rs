@@ -171,10 +171,9 @@ pub fn ssd_scan_chunked_with_context(
         return Err(CudaError::Shape("block_len must be positive".into()));
     }
     if t_len == 0 || !t_len.is_multiple_of(block_len) {
-        return Err(CudaError::Shape(
-            format!("t_len ({t_len}) must be a positive multiple of block_len ({block_len})")
-                .into(),
-        ));
+        return Err(CudaError::Shape(format!(
+            "t_len ({t_len}) must be a positive multiple of block_len ({block_len})"
+        )));
     }
 
     let batch_u =

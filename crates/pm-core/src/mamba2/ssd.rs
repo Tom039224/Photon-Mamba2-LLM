@@ -29,6 +29,7 @@
 /// # Panics
 /// Panics if any buffer length disagrees with the declared shape.
 #[must_use]
+#[allow(clippy::too_many_arguments)]
 pub fn ssd_scan_naive_scalar(
     x: &[f32],
     a: &[f32],
@@ -68,13 +69,13 @@ pub fn ssd_scan_naive_scalar(
                 // Precompute (C_t · B_s) over s for this (b, h, t).
                 // bc_dot[s] = Σ_n C[b,t,h,n] * B[b,s,h,n]
                 let mut bc_dot = vec![0f32; ti + 1];
-                for si in 0..=ti {
+                for (si, slot) in bc_dot.iter_mut().enumerate() {
                     let b_off = ((bi * t_len + si) * n_heads + hi) * n_dim;
                     let mut acc = 0f32;
                     for ni in 0..n_dim {
                         acc += b[b_off + ni] * c[c_off + ni];
                     }
-                    bc_dot[si] = acc;
+                    *slot = acc;
                 }
 
                 for pi in 0..p_dim {

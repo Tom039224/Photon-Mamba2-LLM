@@ -102,12 +102,17 @@ fn hierarchical_decoder_starting_seed_drives_chunk0_first_position() {
     let predicted = pair.decoder.decode(&bk, &encoded, &level_inputs).unwrap();
 
     let v = bk.to_vec_f32(&predicted[0]).unwrap();
+    assert!(
+        v.len() >= c * d,
+        "v.len() ({}) < c * d ({})",
+        v.len(),
+        c * d
+    );
     // First C positions of predicted[0] should be 0 (starting_latent).
-    for j in 0..(c * d) {
+    for (j, &val) in v.iter().enumerate().take(c * d) {
         assert!(
-            v[j].abs() < 1e-5,
-            "expected starting_latent zero at flat idx {j}, got {}",
-            v[j]
+            val.abs() < 1e-5,
+            "expected starting_latent zero at flat idx {j}, got {val}"
         );
     }
     // Next C positions should match the original x[..C] (the shift puts

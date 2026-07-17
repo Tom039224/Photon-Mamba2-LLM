@@ -353,6 +353,7 @@ pub struct PhotonLossReport<O: Ops> {
 /// touched block exactly once. Two independent `backward` calls (one
 /// per loss term) would instead double the recompute cost and require
 /// hand-accumulating two partial grad stores.
+#[allow(clippy::too_many_arguments)]
 pub fn fused_photon_loss_injected<O: Ops>(
     ops: &O,
     hidden: &O::Tensor,
@@ -489,6 +490,9 @@ mod tests {
         let p = bk
             .from_slice_f32(&[0.3, -1.2, 4.0, 0.1, 2.0, -3.0], &[1, 2, 3])
             .unwrap();
+        // `p` is moved into the second slice below, so the first slice
+        // needs its own clone rather than `std::slice::from_ref`.
+        #[allow(clippy::cloned_ref_to_slice_refs)]
         let loss = recursive_consistency_loss(&bk, &[p.clone()], &[p]).unwrap();
         let v = bk.to_vec_f32(&loss).unwrap();
         assert!(

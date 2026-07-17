@@ -117,6 +117,7 @@ fn make_prod_block(
 /// (no backward), and returns `(loss_plus - loss_minus) / (2·eps)`.
 ///
 /// The param is restored to its original data after each call.
+#[allow(clippy::too_many_arguments)]
 fn fd_scalar(
     bk: &CudaBackend,
     block: &Mamba2Block<CudaBackend>,

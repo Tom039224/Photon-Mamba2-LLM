@@ -605,7 +605,7 @@ mod tests {
 
         // Build inputs as Vars so backward() can see them.
         let x_data: Vec<f32> = (0..batch * t * n_heads * p_dim)
-            .map(|i| (i as f32 * 0.1 + 1.0))
+            .map(|i| i as f32 * 0.1 + 1.0)
             .collect();
         let a_data: Vec<f32> = (0..batch * t * n_heads)
             .map(|i| -0.1 - 0.01 * i as f32)

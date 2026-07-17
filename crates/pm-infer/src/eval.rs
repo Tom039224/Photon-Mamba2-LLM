@@ -58,13 +58,13 @@ pub fn score_continuation<O: Ops>(
     // `context.len() + k - 1`.
     let start = context.len() - 1; // position predicting first continuation token
     let mut sum = 0.0f32;
-    for k in 0..continuation.len() {
+    for (k, &tok) in continuation.iter().enumerate() {
         let pos = start + k;
         let row = ops.narrow(&out.logits, 1, pos, 1)?; // (1, 1, V)
         let logp = ops.log_softmax(&row, 2)?;
         let host: Vec<f32> = ops.to_vec_f32(&logp)?;
         assert_eq!(host.len(), v);
-        let tgt = continuation[k] as usize;
+        let tgt = tok as usize;
         sum += host[tgt];
     }
     let mean = sum / continuation.len() as f32;

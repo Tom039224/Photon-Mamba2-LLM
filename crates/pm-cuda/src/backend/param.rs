@@ -70,6 +70,9 @@ pub struct CudaParam {
 
 impl CudaParam {
     pub(crate) fn new(tensor: CudaTensor, id: ParamId) -> Self {
+        // `ParamInner` is deliberately `!Sync` (see module docs above) so
+        // that `Arc<ParamInner>` is intentionally `!Send`/`!Sync` too.
+        #[allow(clippy::arc_with_non_send_sync)]
         Self {
             inner: Arc::new(ParamInner {
                 tensor: UnsafeCell::new(tensor),
